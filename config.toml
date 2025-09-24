@@ -1,0 +1,77 @@
+
+# =============================================================
+# Configuration for Production-Grade MQTT to Socket.IO Gateway
+# =============================================================
+
+# --- Main MQTT Broker Settings ---
+[mqtt]
+# URL must use 'mqtts://' for a TLS-secured connection.
+# The port is typically 8883 for MQTT over TLS.
+url = "mqtt://192.168.1.46:1883"
+
+# A list of default topics to subscribe to on startup.
+# All connected clients will receive messages from these topics.
+topics = ["telemetry/default", "alerts/global"]
+
+  # --- MQTT Client Options ---
+  [mqtt.options]
+  clientId = "prod-gateway-98765"
+
+  # Set to 'false' to create a persistent session with the broker.
+  # This allows the gateway to receive messages published while it was disconnected.
+  clean = false
+
+  # Time in milliseconds to wait for a connection to be established.
+  connectTimeout = 10000
+
+  # Time in milliseconds between reconnection attempts.
+  reconnectPeriod = 5000
+
+  # Time in seconds to send a PINGREQ to the broker to keep the connection alive.
+  keepalive = 60
+
+  # Provide username and password if your broker requires them.
+  # Leave as empty strings if not needed.
+  username = "your-mqtt-username"
+  password = "your-mqtt-password"
+
+  # --- MQTT TLS Security Settings ---
+  [mqtt.tls]
+  # Set to 'true' to force validation of the broker's certificate against the provided CA.
+  # This is a critical security measure to prevent man-in-the-middle attacks.
+  rejectUnauthorized = true
+
+  # Path to the Certificate Authority (CA) file.
+#  ca = ["./certs/ca.crt"]
+
+  # Paths for client certificate and key (for mutual/two-way TLS authentication).
+#  cert = "./certs/client.crt"
+#  key = "./certs/client.key"
+
+# --- Socket.IO Server Settings ---
+[socketio]
+port = 3000
+
+  [socketio.options]
+  # CORS settings to allow connections from web clients.
+  cors = { origin = "*", methods = ["GET", "POST"] }
+
+  # How often the server sends a ping to the client (ms).
+  pingInterval = 10000
+
+  # How long the server waits for a pong response before disconnecting (ms).
+  pingTimeout = 5000
+
+# --- Outgoing Message Queue ---
+[queue]
+# Set to 'true' to queue messages from Socket.IO clients when the MQTT broker is offline.
+enabled = true
+
+# The maximum number of messages to hold in memory.
+maxSize = 1000
+
+# --- Logging Configuration ---
+[log]
+# Controls the verbosity of console output.
+# Options (from least to most verbose): 'error', 'warn', 'info', 'debug'.
+level = "info"
