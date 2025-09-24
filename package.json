@@ -1,0 +1,40 @@
+{
+  "name": "mqtt-socket.io-gateway",
+  "version": "1.0.0",
+  "description": "A robust MQTT to Socket.IO gateway for bidirectional IoT messaging",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": {
+    "name": "Harshad Joshi",
+    "email": "harshad@bufferstack.io",
+    "url": "https://github.com/hj91"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hj91/mqtt-socketio-gateway.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hj91/mqtt-socketio-gateway/issues"
+  },
+  "homepage": "https://github.com/hj91/mqtt-socketio-gateway#readme",
+  "keywords": [
+    "mqtt",
+    "socket.io",
+    "gateway",
+    "iot",
+    "real-time",
+    "mqtts",
+    "nodejs",
+    "bufferstack"
+  ],
+  "dependencies": {
+    "@iarna/toml": "^2.2.5",
+    "joi": "^17.13.1",
+    "mqtt": "^5.7.0",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.8.1"
+  }
+}
