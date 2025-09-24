@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gateway Test Client</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 2em; background-color: #f8f9fa; }
+        .container { max-width: 900px; margin: auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h1, h2 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        #status-bar { padding: 10px; color: white; text-align: center; font-weight: bold; border-radius: 4px; margin-bottom: 20px; transition: background-color 0.5s; }
+        .status-connected { background-color: #28a745; }
+        .status-reconnecting { background-color: #ffc107; color: #333; }
+        .status-disconnected { background-color: #dc3545; }
+        .form-grid { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 20px; }
+        input { flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 15px; border: none; border-radius: 4px; color: white; cursor: pointer; background-color: #007bff; }
+        button:hover { background-color: #0056b3; }
+        #messages { height: 400px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px; margin-top: 10px; background: #fafafa; }
+        .msg { padding: 8px; border-bottom: 1px solid #eee; }
+        .msg-mqtt { color: #333; }
+        .msg-system { color: #666; font-style: italic; }
+        .msg-error { color: #dc3545; font-weight: bold; }
+        .msg strong { color: #0056b3; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>MQTT &harr; Socket.IO Gateway Client</h1>
+    <div id="status-bar">Connecting...</div>
+
+    <h2>Publish to MQTT</h2>
+    <form id="publishForm" class="form-grid">
+        <input type="text" id="publishTopic" placeholder="Topic (e.g., commands/control)" required>
+        <input type="text" id="publishMessage" placeholder="Message (e.g., {"state":"ON"})" required>
+        <button type="submit">Publish</button>
+    </form>
+
+    <h2>Dynamic Subscriptions</h2>
+    <form id="subscribeForm" class="form-grid">
+        <input type="text" id="subscribeTopic" placeholder="Topic to subscribe (e.g., sensors/+/temperature)" required>
+        <button type="submit">Subscribe</button>
+    </form>
+    <form id="unsubscribeForm" class="form-grid">
+        <input type="text" id="unsubscribeTopic" placeholder="Topic to unsubscribe" required>
+        <button type="submit">Unsubscribe</button>
+    </form>
+
+    <h2>Live Messages</h2>
+    <div id="messages"></div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+    const socket = io("http://localhost:3000");
+
+    const statusBar = document.getElementById('status-bar');
+    const messagesDiv = document.getElementById('messages');
+
+    // --- Event Listeners ---
+    socket.on('connect', () => addSystemMessage('Socket.IO connected to gateway.'));
+    socket.on('disconnect', () => addSystemMessage('Socket.IO disconnected from gateway.', 'error'));
+
+    // Gateway Status
+    socket.on('gateway-status', (data) => {
+        statusBar.textContent = data.message;
+        statusBar.className = `status-${data.status}`;
+    });
+
+    // Incoming MQTT Messages
+    socket.on('mqtt-message', (data) => {
+        const msg = `<strong>${data.topic}:</strong> ${data.message}`;
+        addMessage(msg, 'mqtt');
+    });
+
+    // System & Error Messages from Gateway
+    socket.on('gateway-info', (msg) => addSystemMessage(msg));
+    socket.on('gateway-error', (msg) => addSystemMessage(msg, 'error'));
+    socket.on('publish-success', (data) => addSystemMessage(`Successfully published to ${data.topic}.`));
+    socket.on('subscribe-success', (topic) => addSystemMessage(`Successfully subscribed to ${topic}.`));
+    socket.on('unsubscribe-success', (topic) => addSystemMessage(`Successfully unsubscribed from ${topic}.`));
+
+    // --- Form Handlers ---
+    document.getElementById('publishForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const topic = e.target.elements.publishTopic.value;
+        const message = e.target.elements.publishMessage.value;
+        if (topic && message) {
+            socket.emit('mqtt-publish', { topic, message });
+        }
+    });
+
+    document.getElementById('subscribeForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const topic = e.target.elements.subscribeTopic.value;
+        if (topic) {
+            socket.emit('mqtt-subscribe', topic);
+        }
+    });
+
+    document.getElementById('unsubscribeForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const topic = e.target.elements.unsubscribeTopic.value;
+        if (topic) {
+            socket.emit('mqtt-unsubscribe', topic);
+        }
+    });
+
+    // --- Helper Functions ---
+    function addMessage(html, type) {
+        const el = document.createElement('div');
+        el.className = `msg msg-${type}`;
+        el.innerHTML = html;
+        messagesDiv.appendChild(el);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function addSystemMessage(text, type = 'system') {
+        const el = document.createElement('div');
+        el.className = `msg msg-${type}`;
+        el.textContent = `[SYSTEM] ${text}`;
+        messagesDiv.appendChild(el);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+</script>
+</body>
+</html>
