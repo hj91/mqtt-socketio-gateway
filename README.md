@@ -16,7 +16,7 @@ A Node.js gateway bridging MQTT brokers and web clients via Socket.IO for real-t
 
 ## Installation
 
-Install the package dependencies:` 
+Install the package dependencies: 
 
 npm install
 
