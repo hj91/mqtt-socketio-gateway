@@ -1,6 +1,6 @@
 {
   "name": "mqtt-socket.io-gateway",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A robust MQTT to Socket.IO gateway for bidirectional IoT messaging",
   "main": "index.js",
   "scripts": {
